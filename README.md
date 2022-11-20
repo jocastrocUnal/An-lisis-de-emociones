@@ -16,3 +16,19 @@ Las siguientes librerías son clave para la ejecución del código.
 
 !pip install wordcloud
 ```
+
+Tambien para el preprocesamiento estaremos importando las siguientes librerias
+
+```python
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+```
+El web scraping desde la función `getcoments()` tambien requiere las siguientes librerías
+
+```python
+from googleapiclient.discovery import build
+from datetime import datetime, timezone
+import json
+import os
+```
