@@ -1,12 +1,9 @@
 # Hunspell – Corrector ortográfico
-[fuente](https://recursospython.com/guias-y-manuales/hunspell-corrector-ortografico/)
-
-Hunspell es un corrector ortográfico multiplataforma, utilizado por software de primera línea como Mozilla Firefox, Thunderbird, Google Chrome, LibreOffice, entre otros. Provee su funcionalidad a través de la librería libhunspell y accedemos desde Python vía el módulo PyHunspell, desarrollado por Benoît Latinier.
-
-Descarga e instalación
-Usuarios de Microsoft Windows pueden descargar instaladores para las versiones 2.7 y 3.5 vía windows.recursospython.com.
-
-En distribuciones de Linux, puede utilizarse:
+Es un correctos ortográfico y un análizador morfológico, diseñado para idiomas con morfología y comsposición de palabras compleja. Creado por László Németh, como una alternativa para correctores anteriores como MySpell. Es el motor de revisión ortográfica predeterminado en Chrome y Firefox, Libre/OpenOffice,Thunderbird, productos de Adobe y macOS.\
+Provee su funcionalidad a través de la librería libhunspell y accedemos desde Python vía el módulo PyHunspell, desarrollado por Benoît Latinier.
+## Descarga e instalación
+Se requieren los paquetes python-dev y libhunspell-dev.\
+Usuarios de Microsoft Windows pueden descargar instaladores para las versiones 2.7 y 3.5. Y en el caso de distribuciones de Linux puede usarse
 
 ```python
 pip install hunspell
@@ -17,154 +14,106 @@ O bien descargar el código de fuente desde PyPI o el proyecto en GitHub y ejecu
 ```python
 python setup.py install
 ```
-
-Ambos métodos requieren los paquetes python-dev y libhunspell-dev.
-
-Diccionarios
-Hunspell utiliza diccionarios para proporcionar la verificación ortográfica y análisis morfológico. Puedes obtener el diccionario para la lengua española (utilizado en los ejemplos) desde este enlace.
-
-Los siguientes enlaces proveen diccionarios para el resto de las lenguas.
-
-LibreOffice
-Extensiones de LibreOffice
-Mozilla Add-Ons
-Ejemplos
-Importar el módulo y cargar el diccionario español.
-
+## Diccionarios 
+Hunspell utiliza diccionarios para proporcionar la verificación ortográfica y análisis morfológico.Dichos diccionarios existen en la mayoría de lenguajes de uso en la actualidad.\
+Un diccionario con formato Hunspell consiste de dos partes: 
+* El archivo [lang].aff  especifica la sintaxis del afijo para el idioma.
+* El archivo [lang].dic contiene una lista de palabras usando la sintaxis del archivo aff.
+La carga de diccionarios se hace de la siguiente forma
 ```python
 import hunspell
 dic = hunspell.HunSpell("es_ANY.dic", "es_ANY.aff")
 ```
-```python
-dic.spell("recursos")
-```
-```
-True
-```
-```python
-dic.spell("python")
-```
-```
-False
-```
-«Python» es una palabra inglesa, lógicamente no se encuentra en el diccionario español. De todas formas, podemos agregarla.
+Para obtener el diccionario para la lengua española, haga click [aquí](https://recursospython.com/guias-y-manuales/hunspell-corrector-ortografico/#google_vignette). 
+## ¿Cómo funciona? 
+La corrección de palabras consiste en los siguientes pasos:
+1. Analiza una frase extrayendo (tokenizing) las palabras que queremos chequear.
+2. Analiza cada palabra desglosándola en su raíz (stemming) y afijo de conjugación.
+3. Busca en el diccionario si la combinación palabra+afijo es válida para el idioma.
+4. Para palabras incorrectas, sugiera correcciones buscando palabras similares (correctas) en el diccionario.
+#### Tokenizing - Tokenizando
+La tokenización consiste esencialmente en dividir una frase, oración, párrafo o un documento de texto en unidades más pequeñas, como palabras o subpalanras. Cada una de estas unidades más pequeñas se denomina tokens. Para este caso, Hunspell divide las frases en palabras y con estas procede a realizar el desglosamiento.
 
+#### Stemming
+Se divide la palabra en la raiz y en un afijo de conjugación. 
 ```python
-dic.add("python")
+dic.stem("lucecita")
 ```
-```
-0
-```
-```python
-dic.spell("python")
-```
-```
-True
-```
-
-Como también eliminar palabras.
+[b'luz']
 
 ```python
-dic.spell("hola")
+dic.stem("enlazado")
 ```
-```
-True
-```
-
-```python
-dic.remove("hola")
-```
-```
-0
-```
-
-
-```python
-dic.spell("hola")
-```
-```
-False
-```
-
-Nótese que las funciones Hunspell.add y Hunspell.remove operan con el diccionario cargado en memoria. Los cambios no se ven reflejados en el archivo del sistema (en este caso, es_ANY.dic).
-
-(Desafortunadamente, una instancia Hunspell no puede ser serializada vía pickle. Sin embargo, no sería mucho trabajo almacenar las palabras añadidas en un archivo de texto y cargarlo en la próxima ejecución, utilizando las funciones anteriores.)
-
-Para obtener sugerencias de una palabra:
-
-```python
-dic.suggest("python")
-```
-```
-['poncho']
-```
-
-```python
-dic.suggest("cosinar")
-```
-```
-['cocinar', 'copinar', 'narcosis', 'consignar', 'sincopar', 'narcotina']
-```
-
-```python
-dic.suggest("varajar")
-```
-```
-['barajar', 'va rajar', 'va-rajar', 'varar', 'rajar', 'vara']
-```
-
-```python
-dic.suggest("inalar")
-```
-```
-['inhalar', 'inflar', 'in alar', 'in-alar', 'instalar', 'inclinar', 'alminar', 'laminar']
-```
-
-Analizar morfológicamente y obtener el infinitivo de un verbo:
-
-```python
-dic.analyze("tomé")
-```
-```
-[' st:tomar fl:R']
-```
+[b'enlazar']
 
 ```python
 dic.stem("tomé")
 ```
-```
 ['tomar']
+#### Análisis 
+Función parecida a la anterior, sin embargo, en la salida se agrega el tipo de afijo. 
+```python
+dic.analyze("enlazado")
 ```
-
-Por último, la función Hunspell.get_dic_encoding retorna la codificación de caracteres utilizada por el diccionario. Por ejemplo, en Python 2, el siguiente código solicita una palabra e imprime en pantalla todas las sugerencias. Si nuestra terminal utiliza una codificación diferente (por ejemplo, cp850 en Windows) debemos realizar las conversiones necesarias.
+[b' st:enlazar fl:D']
+```python
+dic.analyze("lucecita")
+```
+[b' st:luz fl:U']
 
 ```python
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import hunspell
-import sys
-dic = hunspell.HunSpell("es_ANY.dic", "es_ANY.aff")
-while True:
-    word = raw_input("> ").decode(sys.stdin.encoding)
-    if word:
-        for suggest in dic.suggest(word):
-            print suggest.decode(dic.get_dic_encoding())
+dic.analyze("tomé")
 ```
+[b' st:tomar fl:R']
+
+
+#### Buscar,agregar y eliminar al diccionario
+```python
+dic.spell("recursos")
 ```
-> tomé
-tome
-tomé
-Tomé
-timé
-toné
-toé
-toma
-temé
-tomo
-tosé
-tocé
-comé
-domé
-topé
-tomó
+True
+```python
+dic.spell("python")
 ```
+False
+
+«Python» es una palabra inglesa por lo que no se encuentra en el diccionario español. De todas formas, se puede agregar.
+
+```python
+dic.add("python")
+```
+0
+```python
+dic.spell("python")
+```
+True
+
+También se puede elimir palabras.
+```python
+dic.spell("hola")
+```
+True
+```python
+dic.remove("hola")
+```
+0
+```python
+dic.spell("hola")
+```
+False
+
+#### Sugerencias a una palabra
+Para obtener sugerencias de una palabra:
+```python
+dic.suggest("python")
+```
+['poncho']
+```python
+dic.suggest("cosinar")
+```
+['cocinar', 'copinar', 'narcosis', 'consignar', 'sincopar', 'narcotina']
+## Referencias y fuentes
+[Fuente 1](https://recursospython.com/guias-y-manuales/hunspell-corrector-ortografico/)\
+[Fuente 2](https://cran.r-project.org/web/packages/hunspell/vignettes/intro.html#Installing_Dictionaries_in_RStudio)\
+[Fuente 3](https://zverok.space/blog/2021-01-05-spellchecker-1.html)\
+[Fuente 4](
