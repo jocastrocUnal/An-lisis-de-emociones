@@ -6,28 +6,30 @@ Sin más preámbulos, aquí va el código:
 ```python
 from transformers import pipeline
 
+emotion_analysis = pipeline("sentiment-analysis",
+                            model="pysentimiento/robertuito-emotion-analysis")
 
-classifier = pipeline('sentiment-analysis', 
-                      model="nlptown/bert-base-multilingual-uncased-sentiment")
-
-sentences = ["¡Me encantan los artículos de Medium, son lo máximo!", 
-                "Odio los lunes, no sirven para nada.", 
-                "El libro es medio bueno; me gustaron algunos personajes."]
-
-results = classifier(sentences)
-for result in results:
-    print(f"polaridad: {result['label']}, score: {round(result['score'], 4)}")
+sentiment_analysis = pipeline("sentiment-analysis",
+                       model="BramVanroy/bert-base-multilingual-cased-hebban-reviews",)
 ```
 
-El resultado es una clasificación de análisis de sentimientos para cada cadena de la lista sentences:
+El resultado es una clasificación de análisis de sentimientos y emociones para cada cadena de la lista sentences:
 
+```python
+result1 = sentiment_analysis("Esta pelicula es horrible")
+result1
 ```
-polaridad: 5 stars, score: 0.9102 
-polaridad: 1 star, score: 0.9125 
-polaridad: 3 stars, score: 0.7746
+```
+[{'label': 'negative', 'score': 0.9272792935371399}]
 ```
 
-En este caso, la polaridad sigue un sistema de estrellas (como la de las reseñas de Amazon): una escala que va desde “no me gusta” (una estrella) a “me gusta” (cinco estrellas). El score indica qué tan seguro está el modelo de la clasificación realizada en cada caso.
+```python
+result2 = emotion_analysis("Maldita sea esta película")
+result2
+```
+```
+[{'label': 'anger', 'score': 0.6421485543251038}]
+```
 
 Y eso es todo. Para ponerlo a funcionar debes instalar en tu sistema (con pip o conda) la librería transformers, así:
 
